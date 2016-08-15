@@ -26,7 +26,7 @@
     self = [super initWithCoder: aDecoder];
     if ( self )
     {
-        [self TSCurrencyTextField_commonInit];
+        [self privateInit];
     }
     return self;
 }
@@ -36,22 +36,26 @@
     self = [super initWithFrame: frame];
     if ( self )
     {
-        [self TSCurrencyTextField_commonInit];
+        [self privateInit];
     }
     return self;
 }
 
-- (void) TSCurrencyTextField_commonInit
+- (void) privateInit
 {
     _invalidInputCharacterSet = [[NSCharacterSet decimalDigitCharacterSet] invertedSet];
 
     _currencyNumberFormatter = [[NSNumberFormatter alloc] init];
     _currencyNumberFormatter.locale = [NSLocale currentLocale];
-    _currencyNumberFormatter.numberStyle = kCFNumberFormatterCurrencyStyle;
+    _currencyNumberFormatter.numberStyle = NSNumberFormatterCurrencyStyle;
+    [_currencyNumberFormatter setCurrencySymbol:@""];
     _currencyNumberFormatter.usesGroupingSeparator = YES;
     
     _currencyTextFieldDelegate = [TSCurrencyTextFieldDelegate new];
     [super setDelegate: _currencyTextFieldDelegate];
+  
+    // Configure text field
+    self.keyboardType = UIKeyboardTypeNumberPad;
     
     [self setText: @"0"];
 }
@@ -74,7 +78,7 @@
 
 - (void) setAmount: (NSNumber *) amount
 {
-    NSString* amountString = [NSString stringWithFormat: @"%.*lf", _currencyNumberFormatter.maximumFractionDigits, amount.doubleValue];
+    NSString* amountString = [NSString stringWithFormat: @"%.*lf", (int)_currencyNumberFormatter.maximumFractionDigits, amount.doubleValue];
     [self setText: amountString];
 }
 
@@ -152,12 +156,12 @@
         return NO;
     }
     
-    int distanceFromEnd = textField.text.length - (range.location + range.length);
+    int distanceFromEnd = (int)textField.text.length - ((int)range.location + (int)range.length);
     
     NSString* changed = [textField.text stringByReplacingCharactersInRange: range withString: string];
     [textField setText: changed];
     
-    int pos = textField.text.length - distanceFromEnd;
+    int pos = (int)textField.text.length - (int)distanceFromEnd;
     if ( pos >= 0 && pos <= textField.text.length )
     {
         [textField setCaratPosition: pos];
